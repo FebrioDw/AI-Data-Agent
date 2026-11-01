@@ -14,24 +14,32 @@ This project uses Google's Gemini API. To run this application, you must provide
 
 ## 💻 How to Run Locally
 
-1. Clone the repository
+**1. Clone the repository**
+```bash
 git clone https://github.com/FebrioDw/AI-Data-Agent.git
 cd AI-Data-Agent
+```
 
-2. Install dependencies
+**2. Install dependencies**
 Make sure you have Python installed, then run:
+```bash
 pip install -r requirements.txt
+```
 
-3. Setup Environment Variables
-Create a new file named .env in the root directory and add your Google API Key:
+**3. Setup Environment Variables**
+Create a new file named `.env` in the root directory and add your Google API Key:
+```text
 GOOGLE_API_KEY=your_google_api_key_here
-(Note: The .env file is ignored by Git to keep your credentials secure).
+```
+*(Note: The `.env` file is ignored by Git to keep your credentials secure).*
 
-4. Launch the application
+**4. Launch the application**
+```bash
 streamlit run app.py
+```
 
 ## 🛠️ Tech Stack
-* Frontend: Streamlit
-* AI Agent: LangChain (create_pandas_dataframe_agent)
-* LLM: Google Gemini Flash (ChatGoogleGenerativeAI)
-* Data Manipulation: Pandas
+* **Frontend**: Streamlit
+* **AI Agent**: LangChain (`create_pandas_dataframe_agent`)
+* **LLM**: Google Gemini Flash (`ChatGoogleGenerativeAI`)
+* **Data Manipulation**: Pandas

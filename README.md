@@ -2,6 +2,9 @@
 
 An interactive, AI-powered data analytics workspace built with **Streamlit**, **LangChain**, and **Google Generative AI**. This application allows users to upload raw business datasets (CSV) and perform conversational analytics using natural language queries.
 
+### Active Model Engine
+This AI Data Agent is powered by the **OpenAI GPT-OSS-120b** model as its core reasoning engine. By orchestrating this specific model through the Groq API, the agent achieves ultra-low latency inference while driving the ReAct (Reasoning and Acting) framework. This allows the system to accurately interpret complex natural language queries and dynamically generate executable Pandas code for seamless tabular data analysis.
+
 ## 🚀 Features
 * **Automated EDA**: Instantly view summary statistics, dataset structure, and missing values.
 * **Conversational Analytics**: Ask complex business questions in plain English (or Indonesian). The LangChain agent translates your intent into Pandas code and executes it in an isolated environment.

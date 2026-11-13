@@ -1,13 +1,13 @@
 import streamlit as st
 import pandas as pd
 import os
+from langchain_groq import ChatGroq
+from langchain_core.messages import SystemMessage, HumanMessage
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_experimental.agents import create_pandas_dataframe_agent
 
 # Load environment variables
 load_dotenv()
-google_api_key = os.getenv("GOOGLE_API_KEY")
+groq_api_key = os.getenv("GROQ_API_KEY")
 
 # --- 1. UI CONFIGURATION ---
 st.set_page_config(page_title="Data Analytics Workspace", page_icon="📉", layout="wide")
@@ -20,7 +20,8 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-active_model = "gemini-3.8-flash"
+# Active Model Engine
+active_model = "openai/gpt-oss-120b"
 
 # --- 2. SIDEBAR LAYOUT ---
 with st.sidebar:
@@ -28,8 +29,7 @@ with st.sidebar:
     st.write("Upload your business dataset to begin automated processing.")
     uploaded_file = st.file_uploader("Data Source (CSV)", type=["csv"])
     st.markdown("---")
-    st.success(f"🟢 Google Engine: **{active_model}**")
-    st.caption("Powered by Google Generative AI")
+    st.success(f"🟢 Groq Engine: **{active_model}**")
 
 # --- 3. MAIN DASHBOARD ---
 st.title("📉 Automated Data Insights Dashboard")
@@ -56,31 +56,43 @@ if uploaded_file is not None:
         if user_question:
             with st.spinner("Processing query execution..."):
                 try:
-                    llm = ChatGoogleGenerativeAI(temperature=0, model=active_model, api_key=google_api_key)
-                    
-                    agent = create_pandas_dataframe_agent(
-                        llm, 
-                        df, 
-                        verbose=True, 
-                        allow_dangerous_code=True,
-                        agent_type="tool-calling",
-                        agent_executor_kwargs={"handle_parsing_errors": True}
-                        
+                    # Initialize LLM
+                    llm = ChatGroq(
+                        temperature=0, 
+                        model_name=active_model, 
+                        groq_api_key=groq_api_key,
+                        max_tokens=8000
                     )
                     
-                    forced_prompt = user_question + " \n(Provide only the final clear answer directly in Indonesian)."
-                    response = agent.invoke(forced_prompt)
+                    data_context = df.head(50).to_csv(index=False)
                     
-                    raw_output = response["output"]
-                    if isinstance(raw_output, list) and len(raw_output) > 0 and isinstance(raw_output[0], dict):
-                        clean_output = raw_output[0].get("text", str(raw_output))
-                    elif isinstance(raw_output, dict):
-                        clean_output = raw_output.get("text", str(raw_output))
-                    else:
-                        clean_output = str(raw_output)
+                    
+                    pesan_sistem = SystemMessage(content="You are a smart data analyst. Perform data aggregation and calculations quickly based ONLY on the provided CSV data. DO NOT print, write, or explain step-by-step mathematical additions. Provide only the final conclusion directly in English. If the format requires a list or ranking, you MUST use a Markdown table.")
+                    pesan_user = HumanMessage(content=f"Sales Data:\n{data_context}\n\nQuestion: {user_question}")
+                    
+                    response = llm.invoke([pesan_sistem, pesan_user])
+                    
+                    hasil_teks = response.content
+                    proses_berpikir = response.additional_kwargs.get("reasoning_content", "")
                         
                     st.success("Query Executed Successfully")
-                    st.info(clean_output)
+                    
+                    
+                    if proses_berpikir:
+                        with st.expander("🧠 View AI Reasoning Chain"):
+                            st.write(proses_berpikir)
+                            
+                    st.markdown("### 📊 Analysis Result:")
+                    
+        
+                    if not hasil_teks or hasil_teks.strip() == "":
+                        if proses_berpikir:
+                            st.info("Note: The final answer was not summarized, but you can view the complete analysis in the 'View AI Reasoning Chain' menu above.")
+                        else:
+                            st.warning("Warning: The model processed without error, but refused to provide a text response.")
+                    else:
+                        st.info(hasil_teks)
+                        
                 except Exception as e:
                     st.error(f"Execution Error: {e}")
 else:
